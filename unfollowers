@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Unfollowers Checker</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+}
+
+.container {
+    width: 420px;
+    padding: 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    text-align: center;
+    color: white;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 26px;
+}
+
+.upload-box {
+    margin: 15px 0;
+}
+
+input[type="file"] {
+    padding: 8px;
+    width: 100%;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    margin-top: 20px;
+    padding: 12px 25px;
+    border-radius: 30px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    background: white;
+    color: #833ab4;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    background: #f1f1f1;
+}
+
+.counter {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.result-box {
+    margin-top: 15px;
+    max-height: 250px;
+    overflow-y: auto;
+    text-align: left;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.result-box li {
+    list-style: none;
+    padding: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+.result-box li:last-child {
+    border-bottom: none;
+}
+
+@media(max-width: 500px) {
+    .container {
+        width: 90%;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Instagram Unfollowers Checker</h1>
+
+    <div class="upload-box">
+        <p>Upload followers_1.json</p>
+        <input type="file" id="followersFile">
+    </div>
+
+    <div class="upload-box">
+        <p>Upload following.json</p>
+        <input type="file" id="followingFile">
+    </div>
+
+    <button onclick="checkUnfollowers()">Check Unfollowers</button>
+
+    <div class="counter" id="counter"></div>
+
+    <ul class="result-box" id="result"></ul>
+</div>
+
+<script>
+function checkUnfollowers() {
+    const followersFile = document.getElementById('followersFile').files[0];
+    const followingFile = document.getElementById('followingFile').files[0];
+
+    if (!followersFile || !followingFile) {
+        alert("Please upload both files.");
+        return;
+    }
+
+    const reader1 = new FileReader();
+    const reader2 = new FileReader();
+
+    reader1.onload = function(e1) {
+        const followersData = JSON.parse(e1.target.result);
+
+        const followersSet = new Set(
+            followersData.map(f => f.string_list_data[0].value)
+        );
+
+        reader2.onload = function(e2) {
+            const followingData = JSON.parse(e2.target.result);
+            const followingList = followingData.relationships_following;
+
+            const resultList = document.getElementById("result");
+            const counter = document.getElementById("counter");
+            resultList.innerHTML = "";
+
+            let unfollowers = [];
+
+            followingList.forEach(user => {
+                const username = user.string_list_data[0].value;
+                if (!followersSet.has(username)) {
+                    unfollowers.push(username);
+                }
+            });
+
+            unfollowers.sort();
+
+            unfollowers.forEach(username => {
+                const li = document.createElement("li");
+                li.textContent = username;
+                resultList.appendChild(li);
+            });
+
+            counter.innerHTML = `Found ${unfollowers.length} people not following you back`;
+        };
+
+        reader2.readAsText(followingFile);
+    };
+
+    reader1.readAsText(followersFile);
+}
+</script>
+
+</body>
+</html>
